@@ -248,6 +248,7 @@ import BlogListView from "../pages/Pages/Blogs/ListView";
 import BlogGridView from "../pages/Pages/Blogs/GridView";
 import PageBlogOverview from "../pages/Pages/Blogs/Overview";
 import Categories from "../pages/Base/Categories";
+import Articles from "../pages/Base/Articles";
 
 const authProtectedRoutes = [
   { path: "/dashboard-analytics", component: <DashboardAnalytics /> },
@@ -461,6 +462,9 @@ const authProtectedRoutes = [
 
   // catégories articles
   { path: "/apps-categories-articles", component: <Categories /> },
+
+  // articles
+  { path: "/apps-articles", component: <Articles /> },
 
   // this route should be at the end of all other routes
   // eslint-disable-next-line react/display-name

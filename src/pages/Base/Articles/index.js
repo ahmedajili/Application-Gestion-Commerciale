@@ -33,11 +33,8 @@ import BreadCrumb from "../../../Components/Common/BreadCrumb";
 import DeleteModal from "../../../Components/Common/DeleteModal";
 
 import {
-  getCustomers as onGetCustomers,
-  addNewCustomer as onAddNewCustomer,
-  updateCustomer as onUpdateCustomer,
-  deleteCustomer as onDeleteCustomer,
   getCategoriesArticles as onGetCategoriesArticles,
+  getArticles as onGetArticles,
   addNewCategorie as onAddNewCategorie,
   updateCategorie as onUpdateCategorie,
   deleteCategorie as onDeleteCategorie,
@@ -53,21 +50,11 @@ import Loader from "../../../Components/Common/Loader";
 import { createSelector } from "reselect";
 import ExportPDFModal from "../../../Components/Common/ExportPDFModal";
 
-const Categories = () => {
+const Articles = () => {
   const dispatch = useDispatch();
   const history = useNavigate();
 
-  /*const selectLayoutState = (state) => state.Ecommerce;
-  const ecomCustomerProperties = createSelector(
-    selectLayoutState,
-    (ecom) => ({
-      customers: ecom.customers,
-      isCustomerSuccess: ecom.isCustomerSuccess,
-      error: ecom.error,
-    })
-  );*/
-
-  // cas catégories
+// cas catégories
   const selectLayoutStateCat = (state) => state.CategoriesArticles;
   const categorieArticleProperties = createSelector(
     selectLayoutStateCat,
@@ -82,40 +69,65 @@ const Categories = () => {
     categoriesArticles, isCategoriesSuccess, errorCat
   } = useSelector(categorieArticleProperties)
 
-  const [isEdit, setIsEdit] = useState(false);
-  const [categorieArticle, setCategorieArticle] = useState([]);
+  // cas articles
+  const selectLayoutStateArt = (state) => state.Articles;
+  const articleProperties = createSelector(
+    selectLayoutStateArt,
+    (ecom) => ({
+      articles: ecom.articles,
+      isArticlesSuccess: ecom.isArticlesSuccess,
+      errorArt: ecom.error,
+    })
+  );
+  // Inside your component
+  const {
+    articles, isArticlesSuccess, errorArt
+  } = useSelector(articleProperties)
 
-  /*useEffect(() => {
-    if (categoriesArticles && !categoriesArticles.length) {
-      dispatch(onGetCategoriesArticles());
-    }
-  }, [dispatch, categoriesArticles]);*/
+  const [isEdit, setIsEdit] = useState(false);
+  const [article, setArticle] = useState([]);
+ 
+  useEffect(() => {
+  if (!isCategoriesSuccess && !categoriesArticles.length) {
+    dispatch(onGetCategoriesArticles());
+  }
+}, [isCategoriesSuccess, categoriesArticles, dispatch]);
 
  useEffect(() => {
+  if (!isArticlesSuccess && !articles.length) {
+    dispatch(onGetArticles());
+  }
+}, [isArticlesSuccess, articles, dispatch]);
+
+
+  useEffect(() => {
+    setArticle(articles);
+  }, [articles]);
+
+  useEffect(() => {
+    if (!isEmpty(articles)) {
+      setArticle(articles);
+      setIsEdit(false);
+    }
+  }, [articles]);
+
+useEffect(() => {
   if (!isCategoriesSuccess && !categoriesArticles.length) {
     dispatch(onGetCategoriesArticles());
   }
 }, [isCategoriesSuccess, categoriesArticles, dispatch]);
 
 
-  useEffect(() => {
-    setCategorieArticle(categoriesArticles);
-  }, [categoriesArticles]);
 
-  useEffect(() => {
-    if (!isEmpty(categoriesArticles)) {
-      setCategorieArticle(categoriesArticles);
-      setIsEdit(false);
-    }
-  }, [categoriesArticles]);
 
-  // Inside your component
-  /*const {
-    customers, isCustomerSuccess, error
-  } = useSelector(ecomCustomerProperties)*/
 
-  
-  //const [customer, setCustomer] = useState([]);
+
+const formatPrix = (val) =>
+  new Intl.NumberFormat('fr-FR', {
+    minimumFractionDigits: 3,
+    maximumFractionDigits: 3,
+  }).format(val);
+
 
   // Delete customer
   const [deleteModal, setDeleteModal] = useState(false);
@@ -126,31 +138,18 @@ const Categories = () => {
   const toggle = useCallback(() => {
     if (modal) {
       setModal(false);
-      setCategorieArticle(null);
+      setArticle(null);
+
     } else {
       setModal(true);
     }
   }, [modal]);
 
-  /*const customermocalstatus = [
-    {
-      options: [
-        { label: "Status", value: "Status" },
-        { label: "Active", value: "Active" },
-        { label: "Block", value: "Block" },
-      ],
-    },
-  ];*/
 
-  // Delete Data
-  /*const onClickDelete = (customer) => {
-    setCustomer(customer);
-    setDeleteModal(true);
-  };*/
 
   // Delete Data categorie
   const onClickDeleteCat = (categorie) => {
-    setCategorieArticle(categorie);
+    setArticle(categorie);
     setDeleteModal(true);
   };
   // validation
@@ -159,7 +158,9 @@ const Categories = () => {
     enableReinitialize: true,
 
     initialValues: {
-      libelle: (categorieArticle && categorieArticle.libelle) || '',
+      designation: (article && article.designation) || '',
+      unite: (article && article.unite) || '',
+      prix_U_A_HT: (article && article.prix_U_A_HT) || '',
       //customer: (customer && customer.customer) || '',
       //email: (customer && customer.email) || '',
       //phone: (customer && customer.phone) || '',
@@ -167,7 +168,11 @@ const Categories = () => {
       //status: (customer && customer.status) || '',
     },
     validationSchema: Yup.object({
-      libelle: Yup.string().required("SVP saisir un libellé"),
+      designation: Yup.string().required("SVP saisir une désignation"),
+      unite: Yup.string().required("SVP saisir une unité"),
+      prix_U_A_HT: Yup.number().typeError("Veuillez entrer un nombre valide")
+                    .required("Champ requis")
+                    .min(0, "Le prix ne peut pas être négatif"),
       //customer: Yup.string().required("Please Enter Customer Name"),
       //email: Yup.string().required("Please Enter Your Email"),
       //phone: Yup.string().required("Please Enter Your Phone"),
@@ -184,7 +189,7 @@ const Categories = () => {
           status: values.status,
         };*/
         const updateCategorie = {
-          id: categorieArticle ? categorieArticle.id : 0,
+          id: article ? article.id : 0,
           libelle: values.libelle,
          
         };
@@ -192,7 +197,7 @@ const Categories = () => {
         dispatch(onUpdateCategorie(updateCategorie));
         validation.resetForm();
         setIsEdit(false);
-        setCategorieArticle(null);
+        setArticle(null);
       } else {
         const newlibelle = {
           libelle: values["libelle"],
@@ -217,44 +222,21 @@ const Categories = () => {
     },
   });
 
-  // Delete Data
-  /*const handleDeleteCustomer = () => {
-    if (customer) {
-      dispatch(onDeleteCustomer(customer._id));
-      setDeleteModal(false);
-    }
-  };*/
 
   // Delete Data Categorie
   const handleDeleteCategorie = () => {
-    if (categorieArticle) {
-      dispatch(onDeleteCategorie(categorieArticle.id));
+    if (article) {
+      dispatch(onDeleteCategorie(article.id));
       setDeleteModal(false);
     }
   };
 
-  // Update Data
-  /*const handleCustomerClick = useCallback((arg) => {
-    const customer = arg;
-
-    setCustomer({
-      _id: customer._id,
-      customer: customer.customer,
-      email: customer.email,
-      phone: customer.phone,
-      date: customer.date,
-      status: customer.status
-    });
-
-    setIsEdit(true);
-    toggle();
-  }, [toggle]);*/
 
     // Update Data categories
     const handleCategorieClick = useCallback((arg) => {
       const categorie = arg;
   
-      setCategorieArticle({
+      setArticle({
         id: categorie.id,
         libelle: categorie.libelle,
         
@@ -268,41 +250,6 @@ const Categories = () => {
     }, [toggle]);
 
 
- /* useEffect(() => {
-    if (customers && !customers.length) {
-      dispatch(onGetCustomers());
-    }
-  }, [dispatch, customers]);
-
-
-  useEffect(() => {
-    setCustomer(customers);
-  }, [customers]);
-
-  useEffect(() => {
-    if (!isEmpty(customers)) {
-      setCustomer(customers);
-      setIsEdit(false);
-    }
-  }, [customers]);*/
-
-  // Add Data
-  /*const handleCustomerClicks = () => {
-    setCustomer("");
-    setIsEdit(false);
-    toggle();
-  };*/
-
-  // Node API 
-  // useEffect(() => {
-  //   if (isCustomerCreated) {
-  //     setCustomer(null);
-  //     dispatch(onGetCustomers());
-  //   }
-  // }, [
-  //   dispatch,
-  //   isCustomerCreated,
-  // ]);
 
   const handleValidDate = date => {
     const date1 = moment(new Date(date)).format("DD MMM Y");
@@ -347,9 +294,14 @@ const Categories = () => {
     setSelectedCheckBoxDelete(ele);
   };
 
- // Categories articles Column
+ //  articles Column
  const columns1 = useMemo(
-  () => [
+  () => {
+    const getCategorieLibelle = (id) => {
+  const found = categoriesArticles.find((cat) => cat.id === id);
+  return found ? found.libelle : 'Inconnu';
+};
+return [
     {
       header: <input type="checkbox" id="checkBoxAll" className="form-check-input" onClick={() => checkedAll()} />,
       cell: (cell) => {
@@ -361,8 +313,51 @@ const Categories = () => {
       enableSorting: false,
     },
     {
-      header: "Libellé",
-      accessorKey: "libelle",
+      header: "Désignation",
+      accessorKey: "designation",
+      enableColumnFilter: false,
+    },
+    {
+      header: "Unité",
+      accessorKey: "unite",
+      enableColumnFilter: false,
+    },
+     {
+      header: "Prix Uni Achat HT (DT)",
+      accessorKey: "prix_U_A_HT",
+      cell: ({ getValue }) => formatPrix(getValue()),
+      enableColumnFilter: false,
+    },
+    {
+      header: "Prix Uni Vente HT (DT)",
+      accessorKey: "prix_U_V_HT",
+      cell: ({ getValue }) => formatPrix(getValue()),
+      enableColumnFilter: false,
+    },
+    {
+      header: "Taux TVA (%)",
+      accessorKey: "taux_TVA",
+      enableColumnFilter: false,
+    },
+    {
+      header: "Fodec (%)",
+      accessorKey: "fodec",
+      enableColumnFilter: false,
+    },
+    {
+      header: "Stock",
+      accessorKey: "stockable",
+      cell: ({ getValue }) => (
+    <span className={`badge rounded-pill border ${getValue() ? 'border-success text-success' : 'border-danger text-danger'}`}>
+      {getValue() ? 'Stockable' : 'Non stockable'}
+    </span>
+  ),
+      enableColumnFilter: false,
+    },
+    {
+      header: "Catégorie",
+      accessorKey: "id_CategorieArticle",
+      cell: ({ getValue }) => getCategorieLibelle(getValue()),
       enableColumnFilter: false,
     },
     {
@@ -393,94 +388,9 @@ const Categories = () => {
         );
       },
     },
-  ],
-  [/*handleCustomerClick,*/ checkedAll]
-);
+  ];
+  },[checkedAll,categoriesArticles]);
 
-  // Customers Column
-  /*const columns = useMemo(
-    () => [
-      {
-        header: <input type="checkbox" id="checkBoxAll" className="form-check-input" onClick={() => checkedAll()} />,
-        cell: (cell) => {
-          return <input type="checkbox" className="customerCheckBox form-check-input" value={cell.getValue()} onChange={() => deleteCheckbox()} />;
-        },
-        id: '#',
-        accessorKey: 'id',
-        enableColumnFilter: false,
-        enableSorting: false,
-      },
-      {
-        header: "Customer",
-        accessorKey: "customer",
-        enableColumnFilter: false,
-      },
-      {
-        header: "Email",
-        accessorKey: "email",
-        enableColumnFilter: false,
-      },
-      {
-        header: "Phone",
-        accessorKey: "phone",
-        enableColumnFilter: false,
-      },
-      {
-        header: "Joining Date",
-        accessorKey: "date",
-        enableColumnFilter: false,
-        cell: (cell) => (
-          <>
-            {handleValidDate(cell.getValue())}
-          </>
-        ),
-      },
-      {
-        header: "Status",
-        accessorKey: "status",
-        enableColumnFilter: false,
-        cell: (cell) => {
-          switch (cell.getValue()) {
-            case "Active":
-              return <span className="badge text-uppercase bg-success-subtle text-success"> {cell.getValue()} </span>;
-            case "Block":
-              return <span className="badge text-uppercase bg-danger-subtle text-danger"> {cell.getValue()} </span>;
-            default:
-              return <span className="badge text-uppercase bg-info-subtle text-info"> {cell.getValue()} </span>;
-          }
-        }
-      },
-      {
-        header: "Action",
-        cell: (cellProps) => {
-          return (
-            <ul className="list-inline hstack gap-2 mb-0">
-              <li className="list-inline-item edit" title="Edit">
-                <Link
-                  to="#"
-                  className="text-primary d-inline-block edit-item-btn"
-                  onClick={() => { const customerData = cellProps.row.original; handleCustomerClick(customerData); }}
-                >
-
-                  <i className="ri-pencil-fill fs-16"></i>
-                </Link>
-              </li>
-              <li className="list-inline-item" title="Remove">
-                <Link
-                  to="#"
-                  className="text-danger d-inline-block remove-item-btn"
-                  onClick={() => { const customerData = cellProps.row.original; onClickDelete(customerData); }}
-                >
-                  <i className="ri-delete-bin-5-fill fs-16"></i>
-                </Link>
-              </li>
-            </ul>
-          );
-        },
-      },
-    ],
-    [handleCustomerClick, checkedAll]
-  );*/
 
   const dateFormat = () => {
     let d = new Date(),
@@ -500,14 +410,14 @@ const Categories = () => {
   const [isExportCSV, setIsExportCSV] = useState(false);
   const [isExportPDF, setIsExportPDF] = useState(false);
 
-  document.title = "Catégories | Application Gestion Commerciale";
+  document.title = "Articles | Application Gestion Commerciale";
   return (
     <React.Fragment>
       <div className="page-content">
         <ExportPDFModal
           show={isExportPDF}
           onCloseClick={() => setIsExportPDF(false)}
-          data={categoriesArticles}
+          data={articles}
           columns={[
             //{ field: "id", label: "ID" },
             { field: "libelle", label: "Libellé" },
@@ -519,7 +429,7 @@ const Categories = () => {
         <ExportCSVModal
           show={isExportCSV}
           onCloseClick={() => setIsExportCSV(false)}
-          data={categoriesArticles}
+          data={articles}
         />
         <DeleteModal
           show={deleteModal}
@@ -535,15 +445,15 @@ const Categories = () => {
           onCloseClick={() => setDeleteModalMulti(false)}
         />
         <Container fluid>
-          <BreadCrumb title="Catégories" pageTitle="Base" />
+          <BreadCrumb title="Articles" pageTitle="Base" />
           <Row>
             <Col lg={12}>
-              <Card id="categoriesList">
+              <Card id="articlesList">
                 <CardHeader className="border-0">
                   <Row className="g-4 align-items-center">
                     <div className="col-sm">
                       <div>
-                        <h5 className="card-title mb-0">Liste des catégories</h5>
+                        <h5 className="card-title mb-0">Liste des articles</h5>
                       </div>
                     </div>
                     <div className="col-sm-auto">
@@ -574,16 +484,16 @@ const Categories = () => {
                 </CardHeader>
                 <div className="card-body pt-0">
                   <div>
-                    {!isCategoriesSuccess ? (
-                      <Loader error={errorCat} />
-                    ) : categoriesArticles.length === 0 ? (
+                    {!isArticlesSuccess ? (
+                      <Loader error={errorArt} />
+                    ) : articles.length === 0 ? (
                       <Alert color="secondary" className="text-center">
-                        <strong>Aucune catégorie trouvée. Veuillez ajouter une.</strong>
+                        <strong>Aucun article trouvée. Veuillez ajouter un.</strong>
                       </Alert>
                     ) : (
                        <TableContainer
                         columns={columns1}
-                        data={(categoriesArticles || [])}
+                        data={(articles || [])}
                         isGlobalFilter={true}
                         isAddUserList={false}
                         customPageSize={10}
@@ -595,24 +505,10 @@ const Categories = () => {
                     )
                     }
 
-                    {/*isCategoriesSuccess && categoriesArticles.length ? (
-                      <TableContainer
-                        columns={columns1}
-                        data={(categoriesArticles || [])}
-                        isGlobalFilter={true}
-                        isAddUserList={false}
-                        customPageSize={10}
-                        className="custom-header-css"
-                        handleCustomerClick={handleCustomerClicks}
-                        isCustomerFilter={true}
-                        SearchPlaceholder='Rechercher'
-                      />
-                    ) : (<Loader error={errorCat} />)
-                    */}
                   </div>
                   <Modal id="showModal" isOpen={modal} toggle={toggle} centered>
                     <ModalHeader className="bg-light p-3" toggle={toggle}>
-                      {!!isEdit ? "Modifier une catégorie" : "Ajouter une catégorie"}
+                      {!!isEdit ? "Modifier un article" : "Ajouter un article"}
                     </ModalHeader>
                     <Form className="tablelist-form" onSubmit={validation.handleSubmit}>
                        
@@ -638,29 +534,84 @@ const Categories = () => {
 
                         <div className="mb-3">
                           <Label
-                            htmlFor="libellename-field"
+                            htmlFor="designation-field"
                             className="form-label"
                           >
-                            Libellé
+                            Désignation
                           </Label>
                           <Input
-                            name="libelle"
-                            id="libellename-field"
+                            name="designation"
+                            id="designation-field"
                             className="form-control"
-                            placeholder="Saisir un libellé"
+                            placeholder="Saisir une désignation"
                             type="text"
                             validate={{
                               required: { value: true },
                             }}
                             onChange={validation.handleChange}
                             onBlur={validation.handleBlur}
-                            value={validation.values.libelle || ""}
+                            value={validation.values.designation || ""}
                             invalid={
-                              validation.touched.libelle && validation.errors.libelle ? true : false
+                              validation.touched.designation && validation.errors.designation ? true : false
                             }
                           />
-                          {validation.touched.libelle && validation.errors.libelle ? (
-                            <FormFeedback type="invalid">{validation.errors.libelle}</FormFeedback>
+                          {validation.touched.designation && validation.errors.designation ? (
+                            <FormFeedback type="invalid">{validation.errors.designation}</FormFeedback>
+                          ) : null}
+                        </div>
+                        <div className="mb-3">
+                          <Label
+                            htmlFor="unite-field"
+                            className="form-label"
+                          >
+                            Unité
+                          </Label>
+                          <Input
+                            name="unite"
+                            id="unite-field"
+                            className="form-control"
+                            placeholder="Saisir une unité"
+                            type="text"
+                            validate={{
+                              required: { value: true },
+                            }}
+                            onChange={validation.handleChange}
+                            onBlur={validation.handleBlur}
+                            value={validation.values.unite || ""}
+                            invalid={
+                              validation.touched.unite && validation.errors.unite ? true : false
+                            }
+                          />
+                          {validation.touched.unite && validation.errors.unite ? (
+                            <FormFeedback type="invalid">{validation.errors.unite}</FormFeedback>
+                          ) : null}
+                        </div>
+                        <div className="mb-3">
+                          <Label
+                            htmlFor="Prix-U-A-HT-field"
+                            className="form-label"
+                          >
+                            Prix Unitaire Achat HT
+                          </Label>
+                          <Input
+                            name="prix_U_A_HT"
+                            id="Prix-U-A-HT-field"
+                            className="form-control"
+                            placeholder="Saisir un prix"
+                            type="number"
+                            step="0.001"
+                            validate={{
+                              required: { value: true },
+                            }}
+                            onChange={validation.handleChange}
+                            onBlur={validation.handleBlur}
+                            value={validation.values.prix_U_A_HT || ""}
+                            invalid={
+                              validation.touched.prix_U_A_HT && validation.errors.prix_U_A_HT ? true : false
+                            }
+                          />
+                          {validation.touched.prix_U_A_HT && validation.errors.prix_U_A_HT ? (
+                            <FormFeedback type="invalid">{validation.errors.prix_U_A_HT}</FormFeedback>
                           ) : null}
                         </div>
                          {/*
@@ -765,7 +716,7 @@ const Categories = () => {
                       </ModalBody>
                       <ModalFooter>
                         <div className="hstack gap-2 justify-content-end">
-                          <button type="button" className="btn btn-light" onClick={() => { setModal(false); setCategorieArticle(null); }}> Fermer </button>
+                          <button type="button" className="btn btn-light" onClick={() => { setModal(false); setArticle(null); }}> Fermer </button>
 
                           <button type="submit" className="btn btn-success"> {!!isEdit ? "Modifier" : "Ajouter"} </button>
                         </div>
@@ -783,4 +734,4 @@ const Categories = () => {
   );
 };
 
-export default Categories;
+export default Articles;

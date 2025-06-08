@@ -5,6 +5,7 @@ export const initialState = {
     articles: [],
     loading: false,
     error: null,
+    isArticlesSuccess: false, 
   };
 
   const ArticlesSlice = createSlice({
@@ -20,11 +21,15 @@ export const initialState = {
       builder.addCase(getArticles.fulfilled, (state, action) => {
         state.articles = action.payload;
         state.loading = false;
+        state.isArticlesCreated = false;
+        state.isArticlesSuccess = true;
       });
   
       builder.addCase(getArticles.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || null;
+        state.isArticlesCreated = false;
+        state.isArticlesSuccess = false;
       });
   
       

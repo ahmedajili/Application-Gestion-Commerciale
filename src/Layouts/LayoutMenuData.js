@@ -170,7 +170,7 @@ const Navdata = () => {
         {
           id: "articles",
           label: "Articles",
-          link: "/apps-ecommerce-orders",
+          link: "/apps-articles",
           parentId: "base",
         },
         {
