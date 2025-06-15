@@ -21,9 +21,15 @@ const ExportPDFModal = ({ show, onCloseClick, data, columns, title, filename }) 
 
     // Lignes du tableau
     const tableRows = data.map(item =>
+  columns.map(col => {
+    const val = item[col.field];
+    return col.format ? col.format(val) : val ?? "";
+  })
+);
+    /*const tableRows = data.map(item =>
       columns.map(col => item[col.field] || "")
-    );
-
+    );*/
+    doc.setFont("times", "courier"); // ou "times", "courier"
     autoTable(doc, {
       startY: 25,
       head: [tableColumn],
@@ -81,6 +87,7 @@ ExportPDFModal.propTypes = {
     PropTypes.shape({
       field: PropTypes.string.isRequired,
       label: PropTypes.string.isRequired,
+      format: PropTypes.func, // optionnel
     })
   ).isRequired,
   title: PropTypes.string,

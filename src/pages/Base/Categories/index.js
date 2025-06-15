@@ -56,6 +56,9 @@ import ExportPDFModal from "../../../Components/Common/ExportPDFModal";
 const Categories = () => {
   const dispatch = useDispatch();
   const history = useNavigate();
+  const printPage = () => {
+    window.print();
+  };
 
   /*const selectLayoutState = (state) => state.Ecommerce;
   const ecomCustomerProperties = createSelector(
@@ -167,7 +170,7 @@ const Categories = () => {
       //status: (customer && customer.status) || '',
     },
     validationSchema: Yup.object({
-      libelle: Yup.string().required("SVP saisir un libellé"),
+      libelle: Yup.string().required("Champs requis"),
       //customer: Yup.string().required("Please Enter Customer Name"),
       //email: Yup.string().required("Please Enter Your Email"),
       //phone: Yup.string().required("Please Enter Your Phone"),
@@ -351,26 +354,28 @@ const Categories = () => {
  const columns1 = useMemo(
   () => [
     {
-      header: <input type="checkbox" id="checkBoxAll" className="form-check-input" onClick={() => checkedAll()} />,
+      header: <input type="checkbox" id="checkBoxAll" className="form-check-input no-print action-col" onClick={() => checkedAll()} />,
       cell: (cell) => {
-        return <input type="checkbox" className="customerCheckBox form-check-input" value={cell.getValue()} onChange={() => deleteCheckbox()} />;
+        return <input type="checkbox" className="customerCheckBox form-check-input no-print action-col" value={cell.getValue()} onChange={() => deleteCheckbox()} />;
       },
       id: '#',
       accessorKey: 'id',
       enableColumnFilter: false,
       enableSorting: false,
+      meta: { className: "no-print" }
     },
     {
       header: "Libellé",
       accessorKey: "libelle",
       enableColumnFilter: false,
+      meta: { className: "print-visible" }
     },
     {
       header: "Action",
       cell: (cellProps) => {
         return (
-          <ul className="list-inline hstack gap-2 mb-0">
-            <li className="list-inline-item edit" title="Edit">
+          <ul className="list-inline hstack gap-2 mb-0 no-print action-col">
+            <li className="list-inline-item edit" title="Modifier">
               <Link
                 to="#"
                 className="text-primary d-inline-block edit-item-btn"
@@ -380,7 +385,7 @@ const Categories = () => {
                 <i className="ri-pencil-fill fs-16"></i>
               </Link>
             </li>
-            <li className="list-inline-item" title="Remove">
+            <li className="list-inline-item" title="Supprimer">
               <Link
                 to="#"
                 className="text-danger d-inline-block remove-item-btn"
@@ -392,6 +397,7 @@ const Categories = () => {
           </ul>
         );
       },
+      meta: { className: "no-print" }
     },
   ],
   [/*handleCustomerClick,*/ checkedAll]
@@ -543,10 +549,10 @@ const Categories = () => {
                   <Row className="g-4 align-items-center">
                     <div className="col-sm">
                       <div>
-                        <h5 className="card-title mb-0">Liste des catégories</h5>
+                        <h5 className="card-title mb-0 print-visible-title">Liste des catégories</h5>
                       </div>
                     </div>
-                    <div className="col-sm-auto">
+                    <div className="col-sm-auto no-print">
                       <div>
                         {isMultiDeleteButton && <button className="btn btn-soft-danger me-1"
                           onClick={() => setDeleteModalMulti(true)}
@@ -561,13 +567,21 @@ const Categories = () => {
                         </button>{" "}
                         <button type="button" className="btn btn-info" onClick={() => setIsExportCSV(true)}>
                           <i className="ri-file-download-line align-bottom me-1"></i>{" "}
-                          Exporter CSV
+                          CSV
                         </button>
                         {" "}
                         <button type="button" className="btn btn-info" onClick={() => setIsExportPDF(true)}>
                           <i className="ri-file-download-line align-bottom me-1"></i>{" "}
-                          Exporter PDF
+                          PDF
                         </button>
+                        {" "}
+                        <Link
+                         to="#"
+                         onClick={printPage}
+                         className="btn btn-light no-print"
+                        >
+                        <i className="ri-printer-line align-bottom me-1"></i> Imprimer
+                        </Link>
                       </div>
                     </div>
                   </Row>
@@ -641,7 +655,7 @@ const Categories = () => {
                             htmlFor="libellename-field"
                             className="form-label"
                           >
-                            Libellé
+                            Libellé *
                           </Label>
                           <Input
                             name="libelle"

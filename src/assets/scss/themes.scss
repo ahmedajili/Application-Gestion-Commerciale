@@ -314,3 +314,31 @@ $value in $theme-colors {
       }
   }
 }
+
+@media print {
+  /* Cacher tout par défaut */
+  th, td {
+    display: none;
+  }
+
+  /* Afficher uniquement les cellules et entêtes avec la classe 'print-visible' */
+  th.print-visible,
+  td.print-visible {
+    display: table-cell !important;
+  }
+
+  /* Cacher les éléments non désirés à l'impression (boutons, barres, etc.) */
+  .no-print {
+    display: none !important;
+  }
+
+  .print-visible-title {
+    display: block;
+    text-align: center;
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 20px;
+  }
+}
+
+

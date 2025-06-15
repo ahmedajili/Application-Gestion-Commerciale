@@ -156,7 +156,7 @@ const TableContainer = ({
   return (
     <Fragment>
       {isGlobalFilter && <Row className="mb-3">
-        <CardBody className="border border-dashed border-end-0 border-start-0">
+        <CardBody className="border border-dashed border-end-0 border-start-0 no-print">
           <form>
             <Row>
               <Col sm={5}>
@@ -212,6 +212,41 @@ const TableContainer = ({
         <Table hover className={tableClass}>
           <thead className={theadClass}>
             {getHeaderGroups().map((headerGroup) => (
+    <tr className={trClass} key={headerGroup.id}>
+      {headerGroup.headers.map((header) => {
+        const metaClassName = header.column.columnDef?.meta?.className ?? "";
+        return (
+          <th
+            key={header.id}
+            className={metaClassName}
+            {...{
+              onClick: header.column.getToggleSortingHandler(),
+            }}
+          >
+            {!header.isPlaceholder ? (
+              <>
+                {flexRender(
+                  header.column.columnDef.header,
+                  header.getContext()
+                )}
+                {{
+                  asc: " ▲",
+                  desc: " ▼",
+                }[header.column.getIsSorted()] ?? null}
+                {header.column.getCanFilter() ? (
+                  <div>
+                    <Filter column={header.column} table={table} />
+                  </div>
+                ) : null}
+              </>
+            ) : null}
+          </th>
+        );
+      })}
+    </tr>
+  ))}
+
+            {/*getHeaderGroups().map((headerGroup) => (
               <tr className={trClass} key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <th key={header.id} className={thClass}  {...{
@@ -238,11 +273,24 @@ const TableContainer = ({
                   </th>
                 ))}
               </tr>
-            ))}
+            ))*/}
           </thead>
 
           <tbody>
-            {getRowModel().rows.map((row) => {
+            {getRowModel().rows.map(row => (
+  <tr key={row.id}>
+    {row.getVisibleCells().map(cell => (
+      <td
+        key={cell.id}
+        className={cell.column.columnDef.meta?.className || ""}
+      >
+        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+      </td>
+    ))}
+  </tr>
+))}
+
+            {/*getRowModel().rows.map((row) => {
               return (
                 <tr key={row.id}>
                   {row.getVisibleCells().map((cell) => {
@@ -257,20 +305,20 @@ const TableContainer = ({
                   })}
                 </tr>
               );
-            })}
+            })*/}
           </tbody>
         </Table>
       </div>
 
-      <Row className="align-items-center mt-2 g-3 text-center text-sm-start">
+      <Row className="align-items-center mt-2 g-3 text-center text-sm-start no-print">
         <div className="col-sm">
-          <div className="text-muted">Showing<span className="fw-semibold ms-1">{getState().pagination.pageSize}</span> of <span className="fw-semibold">{data.length}</span> Results
+          <div className="text-muted">Affichage de<span className="fw-semibold ms-1">{getState().pagination.pageSize}</span> sur <span className="fw-semibold">{data.length}</span> Résultats
           </div>
         </div>
         <div className="col-sm-auto">
           <ul className="pagination pagination-separated pagination-md justify-content-center justify-content-sm-start mb-0">
             <li className={!getCanPreviousPage() ? "page-item disabled" : "page-item"}>
-              <Link to="#" className="page-link" onClick={previousPage}>Previous</Link>
+              <Link to="#" className="page-link" onClick={previousPage}>Précédent</Link>
             </li>
             {getPageOptions().map((item, key) => (
               <React.Fragment key={key}>
@@ -280,7 +328,7 @@ const TableContainer = ({
               </React.Fragment>
             ))}
             <li className={!getCanNextPage() ? "page-item disabled" : "page-item"}>
-              <Link to="#" className="page-link" onClick={nextPage}>Next</Link>
+              <Link to="#" className="page-link" onClick={nextPage}>Suivant</Link>
             </li>
           </ul>
         </div>

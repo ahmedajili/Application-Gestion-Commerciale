@@ -53,6 +53,9 @@ import ExportPDFModal from "../../../Components/Common/ExportPDFModal";
 const Articles = () => {
   const dispatch = useDispatch();
   const history = useNavigate();
+  const printPage = () => {
+    window.print();
+  };
 
 // cas catégories
   const selectLayoutStateCat = (state) => state.CategoriesArticles;
@@ -122,11 +125,19 @@ useEffect(() => {
 
 
 
-const formatPrix = (val) =>
-  new Intl.NumberFormat('fr-FR', {
+const formatPrix = (val, forPDF = false) => {
+  const str = new Intl.NumberFormat('fr-FR', {
     minimumFractionDigits: 3,
     maximumFractionDigits: 3,
   }).format(val);
+
+  return forPDF ? str.replace(/\u202F/g, " ") : str;
+};
+
+  const getCategorieLibellePDF = (id) => {
+  const found = categoriesArticles.find((cat) => cat.id === id);
+  return found ? found.libelle : 'Inconnu';
+};
 
 
   // Delete customer
@@ -311,38 +322,45 @@ return [
       accessorKey: 'id',
       enableColumnFilter: false,
       enableSorting: false,
+      meta: { className: "no-print" }
     },
     {
       header: "Désignation",
       accessorKey: "designation",
       enableColumnFilter: false,
+      meta: { className: "print-visible" }
     },
     {
       header: "Unité",
       accessorKey: "unite",
       enableColumnFilter: false,
+      meta: { className: "print-visible" }
     },
      {
       header: "Prix Uni Achat HT (DT)",
       accessorKey: "prix_U_A_HT",
       cell: ({ getValue }) => formatPrix(getValue()),
       enableColumnFilter: false,
+      meta: { className: "print-visible" }
     },
     {
       header: "Prix Uni Vente HT (DT)",
       accessorKey: "prix_U_V_HT",
       cell: ({ getValue }) => formatPrix(getValue()),
       enableColumnFilter: false,
+      meta: { className: "print-visible" }
     },
     {
       header: "Taux TVA (%)",
       accessorKey: "taux_TVA",
       enableColumnFilter: false,
+      meta: { className: "print-visible" }
     },
     {
       header: "Fodec (%)",
       accessorKey: "fodec",
       enableColumnFilter: false,
+      meta: { className: "print-visible" }
     },
     {
       header: "Stock",
@@ -353,19 +371,21 @@ return [
     </span>
   ),
       enableColumnFilter: false,
+      meta: { className: "print-visible" }
     },
     {
       header: "Catégorie",
       accessorKey: "id_CategorieArticle",
       cell: ({ getValue }) => getCategorieLibelle(getValue()),
       enableColumnFilter: false,
+      meta: { className: "print-visible" }
     },
     {
       header: "Action",
       cell: (cellProps) => {
         return (
           <ul className="list-inline hstack gap-2 mb-0">
-            <li className="list-inline-item edit" title="Edit">
+            <li className="list-inline-item edit" title="Modifier">
               <Link
                 to="#"
                 className="text-primary d-inline-block edit-item-btn"
@@ -375,7 +395,7 @@ return [
                 <i className="ri-pencil-fill fs-16"></i>
               </Link>
             </li>
-            <li className="list-inline-item" title="Remove">
+            <li className="list-inline-item" title="Supprimer">
               <Link
                 to="#"
                 className="text-danger d-inline-block remove-item-btn"
@@ -387,6 +407,7 @@ return [
           </ul>
         );
       },
+      meta: { className: "no-print" }
     },
   ];
   },[checkedAll,categoriesArticles]);
@@ -420,10 +441,17 @@ return [
           data={articles}
           columns={[
             //{ field: "id", label: "ID" },
-            { field: "libelle", label: "Libellé" },
+            { field: "designation", label: "Désignation" },
+            { field: "unite", label: "Unité" },
+            { field: "prix_U_A_HT", label: "Prix Uni Achat HT (DT)", format: (val) => formatPrix(val, true)},
+            { field: "prix_U_V_HT", label: "Prix Uni Vente HT (DT)", format: (val) => formatPrix(val, true) },
+            { field: "taux_TVA", label: "Taux TVA (%)" },
+            { field: "fodec", label: "Fodec (%)" },
+            { field: "stockable", label: "Stock", format: (val) => (val ? "Stockable" : "Non stockable") },
+            { field: "id_CategorieArticle", label: "Catégorie", format: (val) => getCategorieLibellePDF(val) },
           ]}
-          title="Liste des Catégories"
-          filename="catégories"
+          title="Liste des articles"
+          filename="Articles"
         />
 
         <ExportCSVModal
@@ -453,10 +481,10 @@ return [
                   <Row className="g-4 align-items-center">
                     <div className="col-sm">
                       <div>
-                        <h5 className="card-title mb-0">Liste des articles</h5>
+                        <h5 className="card-title mb-0 print-visible-title">Liste des articles</h5>
                       </div>
                     </div>
-                    <div className="col-sm-auto">
+                    <div className="col-sm-auto no-print">
                       <div>
                         {isMultiDeleteButton && <button className="btn btn-soft-danger me-1"
                           onClick={() => setDeleteModalMulti(true)}
@@ -471,13 +499,21 @@ return [
                         </button>{" "}
                         <button type="button" className="btn btn-info" onClick={() => setIsExportCSV(true)}>
                           <i className="ri-file-download-line align-bottom me-1"></i>{" "}
-                          Exporter CSV
+                          CSV
                         </button>
                         {" "}
                         <button type="button" className="btn btn-info" onClick={() => setIsExportPDF(true)}>
                           <i className="ri-file-download-line align-bottom me-1"></i>{" "}
-                          Exporter PDF
+                          PDF
                         </button>
+                        {" "}
+                        <Link
+                         to="#"
+                         onClick={printPage}
+                         className="btn btn-light no-print"
+                        >
+                        <i className="ri-printer-line align-bottom me-1"></i> Imprimer
+                        </Link>
                       </div>
                     </div>
                   </Row>
