@@ -49,6 +49,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Loader from "../../../Components/Common/Loader";
 import { createSelector } from "reselect";
 import ExportPDFModal from "../../../Components/Common/ExportPDFModal";
+import Select from "react-select";
 
 const Articles = () => {
   const dispatch = useDispatch();
@@ -122,6 +123,10 @@ useEffect(() => {
 
 
 
+const categorieOptions = categoriesArticles.map((cat) => ({
+  value: cat.id,
+  label: cat.libelle,
+}));
 
 
 
@@ -172,6 +177,11 @@ const formatPrix = (val, forPDF = false) => {
       designation: (article && article.designation) || '',
       unite: (article && article.unite) || '',
       prix_U_A_HT: (article && article.prix_U_A_HT) || '',
+      prix_U_V_HT: (article && article.prix_U_V_HT) || '',
+      taux_TVA: (article && article.taux_TVA) || '',
+      fodec: (article && article.fodec) || '',
+      stockable: (article && article.stockable) || false,
+      categorie: (article && article.id_CategorieArticle) || '',
       //customer: (customer && customer.customer) || '',
       //email: (customer && customer.email) || '',
       //phone: (customer && customer.phone) || '',
@@ -179,11 +189,23 @@ const formatPrix = (val, forPDF = false) => {
       //status: (customer && customer.status) || '',
     },
     validationSchema: Yup.object({
-      designation: Yup.string().required("SVP saisir une désignation"),
-      unite: Yup.string().required("SVP saisir une unité"),
+      designation: Yup.string().required("Champs requis"),
+      unite: Yup.string().required("Champs requis"),
       prix_U_A_HT: Yup.number().typeError("Veuillez entrer un nombre valide")
-                    .required("Champ requis")
+                    .required("Champs requis")
                     .min(0, "Le prix ne peut pas être négatif"),
+      prix_U_V_HT: Yup.number().typeError("Veuillez entrer un nombre valide")
+                    .required("Champs requis")
+                    .min(0, "Le prix ne peut pas être négatif"),
+      taux_TVA: Yup.number().typeError("Veuillez entrer un nombre valide")
+                    .required("Champs requis")
+                    .min(0, "Le prix ne peut pas être négatif"),
+      fodec: Yup.number().typeError("Veuillez entrer un nombre valide")
+                    .required("Champs requis")
+                    .min(0, "Le prix ne peut pas être négatif"),
+      stockable: Yup.boolean().required("Champs requis"),
+      categorie: Yup.number().required("Champs requis"),
+
       //customer: Yup.string().required("Please Enter Customer Name"),
       //email: Yup.string().required("Please Enter Your Email"),
       //phone: Yup.string().required("Please Enter Your Phone"),
@@ -550,7 +572,8 @@ return [
                        
                       <ModalBody>
                         <input type="hidden" id="id-field" />
-
+                        <div className="row">
+                        <div className="col-md-6">
                         <div
                           className="mb-3"
                           id="modal-id"
@@ -573,7 +596,7 @@ return [
                             htmlFor="designation-field"
                             className="form-label"
                           >
-                            Désignation
+                            Désignation *
                           </Label>
                           <Input
                             name="designation"
@@ -600,7 +623,7 @@ return [
                             htmlFor="unite-field"
                             className="form-label"
                           >
-                            Unité
+                            Unité *
                           </Label>
                           <Input
                             name="unite"
@@ -627,7 +650,7 @@ return [
                             htmlFor="Prix-U-A-HT-field"
                             className="form-label"
                           >
-                            Prix Unitaire Achat HT
+                            Prix Unitaire Achat HT (DT) *
                           </Label>
                           <Input
                             name="prix_U_A_HT"
@@ -649,6 +672,144 @@ return [
                           {validation.touched.prix_U_A_HT && validation.errors.prix_U_A_HT ? (
                             <FormFeedback type="invalid">{validation.errors.prix_U_A_HT}</FormFeedback>
                           ) : null}
+                        </div>
+                        <div className="mb-3">
+                          <Label
+                            htmlFor="Prix-U-V-HT-field"
+                            className="form-label"
+                          >
+                            Prix Unitaire Vente HT (DT) *
+                          </Label>
+                          <Input
+                            name="prix_U_V_HT"
+                            id="Prix-U-V-HT-field"
+                            className="form-control"
+                            placeholder="Saisir un prix"
+                            type="number"
+                            step="0.001"
+                            validate={{
+                              required: { value: true },
+                            }}
+                            onChange={validation.handleChange}
+                            onBlur={validation.handleBlur}
+                            value={validation.values.prix_U_V_HT || ""}
+                            invalid={
+                              validation.touched.prix_U_V_HT && validation.errors.prix_U_V_HT ? true : false
+                            }
+                          />
+                          {validation.touched.prix_U_V_HT && validation.errors.prix_U_V_HT ? (
+                            <FormFeedback type="invalid">{validation.errors.prix_U_V_HT}</FormFeedback>
+                          ) : null}
+                        </div>
+                        </div>
+                        <div className="col-md-6">
+                        <div className="mb-3">
+                          <Label
+                            htmlFor="Taux-TVA-field"
+                            className="form-label"
+                          >
+                            Taux TVA (%) *
+                          </Label>
+                          <Input
+                            name="taux_TVA"
+                            id="Taux-TVA-field"
+                            className="form-control"
+                            placeholder="Saisir un taux TVA"
+                            type="number"
+                            step="0.001"
+                            validate={{
+                              required: { value: true },
+                            }}
+                            onChange={validation.handleChange}
+                            onBlur={validation.handleBlur}
+                            value={validation.values.taux_TVA || ""}
+                            invalid={
+                              validation.touched.taux_TVA && validation.errors.taux_TVA ? true : false
+                            }
+                          />
+                          {validation.touched.taux_TVA && validation.errors.taux_TVA ? (
+                            <FormFeedback type="invalid">{validation.errors.taux_TVA}</FormFeedback>
+                          ) : null}
+                        </div>
+                        <div className="mb-3">
+                          <Label
+                            htmlFor="Fodec-field"
+                            className="form-label"
+                          >
+                            Fodec (%) *
+                          </Label>
+                          <Input
+                            name="fodec"
+                            id="Fodec-field"
+                            className="form-control"
+                            placeholder="Saisir Fodec"
+                            type="number"
+                            step="0.001"
+                            validate={{
+                              required: { value: true },
+                            }}
+                            onChange={validation.handleChange}
+                            onBlur={validation.handleBlur}
+                            value={validation.values.fodec || ""}
+                            invalid={
+                              validation.touched.fodec && validation.errors.fodec ? true : false
+                            }
+                          />
+                          {validation.touched.fodec && validation.errors.fodec ? (
+                            <FormFeedback type="invalid">{validation.errors.fodec}</FormFeedback>
+                          ) : null}
+                        </div>
+                        <div className="mb-3 form-check">
+                        <Input
+                          type="checkbox"
+                          name="stockable"
+                          id="stockable-field"
+                          className="form-check-input"
+                          onChange={validation.handleChange}
+                          onBlur={validation.handleBlur}
+                          checked={validation.values.stockable || false}
+                        />
+                        <Label htmlFor="stockable-field" className="form-check-label">
+                          Stockable *
+                        </Label>
+                        {validation.touched.stockable && validation.errors.stockable ? (
+                          <FormFeedback type="invalid" className="d-block">
+                            {validation.errors.stockable}
+                          </FormFeedback>
+                        ) : null}
+                      </div>
+                      <div className="mb-3">
+                      <Label htmlFor="categorie-field" className="form-label">
+                        Catégorie *
+                      </Label>
+                      <Select
+                        inputId="categorie-field"
+                        name="categorie"
+                        options={categorieOptions}
+                        onChange={(selectedOption) =>
+                          validation.setFieldValue("categorie", selectedOption ? selectedOption.value : "")
+                        }
+                        onBlur={() => validation.setFieldTouched("categorie", true)}
+                        value={
+                          categorieOptions.find(
+                            (option) => option.value === validation.values.categorie
+                          ) || null
+                        }
+                        classNamePrefix="react-select"
+                        className={
+                          validation.touched.categorie && validation.errors.categorie
+                            ? "is-invalid"
+                            : ""
+                        }
+                        placeholder="Sélectionner une catégorie..."
+                      />
+                      {validation.touched.categorie && validation.errors.categorie ? (
+                        <div className="invalid-feedback d-block">
+                          {validation.errors.categorie}
+                        </div>
+                      ) : null}
+                    </div>
+                      </div>
                         </div>
                          {/*
                         <div className="mb-3">
