@@ -388,3 +388,12 @@ export const deleteCategorie = idcategorie => api.delete(url.DELETE_CATEGORIE + 
 
 // get Articles
 export const getArticles = () => api.get(url.GET_ARTICLES);
+
+// add Articles
+export const addNewArticle = article => api.create(url.ADD_NEW_ARTICLE, article);
+
+// update Article
+export const updateArticle = article => api.put(url.UPDATE_ARTICLE + '/' + article.id, article);
+
+// delete Article
+export const deleteArticle = idarticle => api.delete(url.DELETE_ARTICLE + '/' + idarticle);

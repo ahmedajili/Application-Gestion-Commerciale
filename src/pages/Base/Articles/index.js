@@ -35,9 +35,10 @@ import DeleteModal from "../../../Components/Common/DeleteModal";
 import {
   getCategoriesArticles as onGetCategoriesArticles,
   getArticles as onGetArticles,
-  addNewCategorie as onAddNewCategorie,
-  updateCategorie as onUpdateCategorie,
-  deleteCategorie as onDeleteCategorie,
+  addNewArticle as onAddNewArticle,
+  updateArticle as onUpdateArticle,
+  deleteArticle as onDeleteArticle,
+  
 } from "../../../slices/thunks";
 
 //redux
@@ -163,9 +164,9 @@ const formatPrix = (val, forPDF = false) => {
 
 
 
-  // Delete Data categorie
-  const onClickDeleteCat = (categorie) => {
-    setArticle(categorie);
+  // Delete Data Article
+  const onClickDeleteArt = (article) => {
+    setArticle(article);
     setDeleteModal(true);
   };
   // validation
@@ -176,10 +177,10 @@ const formatPrix = (val, forPDF = false) => {
     initialValues: {
       designation: (article && article.designation) || '',
       unite: (article && article.unite) || '',
-      prix_U_A_HT: (article && article.prix_U_A_HT) || '',
-      prix_U_V_HT: (article && article.prix_U_V_HT) || '',
-      taux_TVA: (article && article.taux_TVA) || '',
-      fodec: (article && article.fodec) || '',
+      prix_U_A_HT: (article && article.prix_U_A_HT) || 0,
+      prix_U_V_HT: (article && article.prix_U_V_HT) || 0,
+      taux_TVA: (article && article.taux_TVA) || 0,
+      fodec: (article && article.fodec) || 0,
       stockable: (article && article.stockable) || false,
       categorie: (article && article.id_CategorieArticle) || '',
       //customer: (customer && customer.customer) || '',
@@ -213,71 +214,81 @@ const formatPrix = (val, forPDF = false) => {
     }),
     onSubmit: (values) => {
       if (isEdit) {
-        /*const updateCustomer = {
-          _id: customer ? customer._id : 0,
-          customer: values.customer,
-          email: values.email,
-          phone: values.phone,
-          date: date,
-          status: values.status,
-        };*/
-        const updateCategorie = {
+      
+        const updateArticle = {
           id: article ? article.id : 0,
-          libelle: values.libelle,
+          designation: values.designation,
+          unite: values.unite,
+          prix_U_A_HT: values.prix_U_A_HT,
+          prix_U_V_HT: values.prix_U_V_HT,
+          taux_TVA: values.taux_TVA,
+          fodec: values.fodec,
+          stockable: values.stockable,
+          id_CategorieArticle: values.categorie,
          
         };
-        // update customer
-        dispatch(onUpdateCategorie(updateCategorie));
+        // update article
+        dispatch(onUpdateArticle(updateArticle));
         validation.resetForm();
         setIsEdit(false);
         setArticle(null);
       } else {
-        const newlibelle = {
-          libelle: values["libelle"],
+        const newarticle = {
+          designation: values["designation"],
+          unite: values["unite"],
+          prix_U_A_HT: values["prix_U_A_HT"],
+          prix_U_V_HT: values["prix_U_V_HT"],
+          taux_TVA: values["taux_TVA"],
+          fodec: values["fodec"],
+          stockable: values["stockable"],
+          id_CategorieArticle: values["categorie"],
         };
-        /*const newCustomer = {
-          _id: (Math.floor(Math.random() * (30 - 20)) + 20).toString(),
-          customer: values["customer"],
-          email: values["email"],
-          phone: values["phone"],
-          date: date,
-          status: values["status"]
-        };*/
-        // save new customer
-        //dispatch(onAddNewCustomer(newCustomer));
-        //console.log("mercii");
-        dispatch(onAddNewCategorie(newlibelle));
+       
+        dispatch(onAddNewArticle(newarticle));
         validation.resetForm();
         
       }
-      history("/apps-categories-articles");
+      history("/apps-articles");
       toggle();
     },
   });
 
 
-  // Delete Data Categorie
-  const handleDeleteCategorie = () => {
+  // Delete Data Article
+  const handleDeleteArticle = () => {
     if (article) {
-      dispatch(onDeleteCategorie(article.id));
+      dispatch(onDeleteArticle(article.id));
       setDeleteModal(false);
     }
   };
 
 
-    // Update Data categories
-    const handleCategorieClick = useCallback((arg) => {
-      const categorie = arg;
-  
+    // Update Data articles
+    const handleArticleClick = useCallback((arg) => {
+      const article = arg;
+      //console.log(article);
       setArticle({
-        id: categorie.id,
-        libelle: categorie.libelle,
-        
+        id: article.id,
+        designation: article.designation,
+        unite: article.unite,
+        prix_U_A_HT: article.prix_U_A_HT,
+        prix_U_V_HT: article.prix_U_V_HT,
+        taux_TVA: article.taux_TVA,
+        fodec: article.fodec,
+        stockable: article.stockable,
+        id_CategorieArticle: article.id_CategorieArticle,
       });
   
       setIsEdit(true);
       validation.setValues({
-    libelle: categorie.libelle,
+        designation: article.designation,
+        unite: article.unite,
+        prix_U_A_HT: article.prix_U_A_HT,
+        prix_U_V_HT: article.prix_U_V_HT,
+        taux_TVA: article.taux_TVA,
+        fodec: article.fodec,
+        stockable: article.stockable,
+        id_CategorieArticle: article.id_CategorieArticle,
   });
       toggle();
     }, [toggle]);
@@ -313,7 +324,7 @@ const formatPrix = (val, forPDF = false) => {
   const deleteMultiple = () => {
     const checkall = document.getElementById("checkBoxAll");
     selectedCheckBoxDelete.forEach((element) => {
-      dispatch(onDeleteCategorie(element.value));
+      dispatch(onDeleteArticle(element.value));
       setTimeout(() => { toast.clearWaitingQueue(); }, 3000);
     });
     setIsMultiDeleteButton(false);
@@ -411,7 +422,7 @@ return [
               <Link
                 to="#"
                 className="text-primary d-inline-block edit-item-btn"
-                onClick={() => { const categorieData = cellProps.row.original; handleCategorieClick(categorieData); }}
+                onClick={() => { const articleData = cellProps.row.original; handleArticleClick(articleData); }}
               >
 
                 <i className="ri-pencil-fill fs-16"></i>
@@ -421,7 +432,7 @@ return [
               <Link
                 to="#"
                 className="text-danger d-inline-block remove-item-btn"
-                onClick={() => { const categorieData = cellProps.row.original; onClickDeleteCat(categorieData); }}
+                onClick={() => { const articleData = cellProps.row.original; onClickDeleteArt(articleData); }}
               >
                 <i className="ri-delete-bin-5-fill fs-16"></i>
               </Link>
@@ -483,7 +494,7 @@ return [
         />
         <DeleteModal
           show={deleteModal}
-          onDeleteClick={handleDeleteCategorie}
+          onDeleteClick={handleDeleteArticle}
           onCloseClick={() => setDeleteModal(false)}
         />
         <DeleteModal
@@ -664,7 +675,7 @@ return [
                             }}
                             onChange={validation.handleChange}
                             onBlur={validation.handleBlur}
-                            value={validation.values.prix_U_A_HT || ""}
+                            value={validation.values.prix_U_A_HT ?? ""}
                             invalid={
                               validation.touched.prix_U_A_HT && validation.errors.prix_U_A_HT ? true : false
                             }
@@ -692,7 +703,7 @@ return [
                             }}
                             onChange={validation.handleChange}
                             onBlur={validation.handleBlur}
-                            value={validation.values.prix_U_V_HT || ""}
+                            value={validation.values.prix_U_V_HT ?? ""}
                             invalid={
                               validation.touched.prix_U_V_HT && validation.errors.prix_U_V_HT ? true : false
                             }
@@ -722,7 +733,7 @@ return [
                             }}
                             onChange={validation.handleChange}
                             onBlur={validation.handleBlur}
-                            value={validation.values.taux_TVA || ""}
+                            value={validation.values.taux_TVA ?? ""}
                             invalid={
                               validation.touched.taux_TVA && validation.errors.taux_TVA ? true : false
                             }
@@ -750,7 +761,7 @@ return [
                             }}
                             onChange={validation.handleChange}
                             onBlur={validation.handleBlur}
-                            value={validation.values.fodec || ""}
+                            value={validation.values.fodec ?? ""}
                             invalid={
                               validation.touched.fodec && validation.errors.fodec ? true : false
                             }

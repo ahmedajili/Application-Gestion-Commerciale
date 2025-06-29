@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getArticles } from './thunk';
+import { getArticles, addNewArticle, updateArticle, deleteArticle } from './thunk';
 
 export const initialState = {
     articles: [],
@@ -31,7 +31,38 @@ export const initialState = {
         state.isArticlesCreated = false;
         state.isArticlesSuccess = false;
       });
-  
+      
+       builder.addCase(addNewArticle.fulfilled, (state, action) => {
+          state.articles.push(action.payload);
+           //  Tri après ajout (ordre alphabétique par designation)
+          state.articles.sort((a, b) =>
+          a.designation.localeCompare(b.designation)
+          );
+         state.isArticlesCreated = true;
+      });
+      builder.addCase(addNewArticle.rejected, (state, action) => {
+         state.error = action.error.message || null;
+       });
+
+        builder.addCase(updateArticle.fulfilled, (state, action) => {
+          state.articles = state.articles.map(article =>
+          article.id.toString() === action.payload.id.toString()
+            ? { ...article, ...action.payload }
+           : article
+               );
+        });
+         builder.addCase(updateArticle.rejected, (state, action) => {
+         state.error = action.error.message || null;
+        });
+       
+        builder.addCase(deleteArticle.fulfilled, (state, action) => {
+          state.articles = state.articles.filter(
+         article => article.id.toString() !== action.payload.idarticle.toString()
+          );
+        });
+       builder.addCase(deleteArticle.rejected, (state, action) => {
+         state.error = action.error.message || null;
+         });
       
     }
   });

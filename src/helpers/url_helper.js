@@ -245,3 +245,6 @@ export const DELETE_CATEGORIE = "https://localhost:7103/api/CategorieArticle";
 
 //Articles
 export const GET_ARTICLES = "https://localhost:7103/api/Article";
+export const ADD_NEW_ARTICLE = "https://localhost:7103/api/Article";
+export const UPDATE_ARTICLE = "https://localhost:7103/api/Article";
+export const DELETE_ARTICLE = "https://localhost:7103/api/Article";
