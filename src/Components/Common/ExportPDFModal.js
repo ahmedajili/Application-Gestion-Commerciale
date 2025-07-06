@@ -23,7 +23,7 @@ const ExportPDFModal = ({ show, onCloseClick, data, columns, title, filename }) 
     const tableRows = data.map(item =>
   columns.map(col => {
     const val = item[col.field];
-    return col.format ? col.format(val) : val ?? "";
+    return col.format ? col.format(val, item) : val ?? "";
   })
 );
     /*const tableRows = data.map(item =>

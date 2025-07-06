@@ -34,7 +34,7 @@ import DeleteModal from "../../../Components/Common/DeleteModal";
 
 import {
   getCategoriesArticles as onGetCategoriesArticles,
-  getArticles as onGetArticles,
+  getTiers as onGetTiers,
   addNewArticle as onAddNewArticle,
   updateArticle as onUpdateArticle,
   deleteArticle as onDeleteArticle,
@@ -52,98 +52,48 @@ import { createSelector } from "reselect";
 import ExportPDFModal from "../../../Components/Common/ExportPDFModal";
 import Select from "react-select";
 
-const Articles = () => {
+const Tiers = () => {
   const dispatch = useDispatch();
   const history = useNavigate();
   const printPage = () => {
     window.print();
   };
 
-// cas catégories
-  const selectLayoutStateCat = (state) => state.CategoriesArticles;
-  const categorieArticleProperties = createSelector(
-    selectLayoutStateCat,
+  // cas tiers
+  const selectLayoutStateTiers = (state) => state.Tiers;
+  const tiersProperties = createSelector(
+    selectLayoutStateTiers,
     (ecom) => ({
-      categoriesArticles: ecom.categoriesArticles,
-      isCategoriesSuccess: ecom.isCategoriesSuccess,
-      errorCat: ecom.error,
+      tiers: ecom.tiers,
+      isTiersSuccess: ecom.isTiersSuccess,
+      errorTiers: ecom.error,
     })
   );
   // Inside your component
   const {
-    categoriesArticles, isCategoriesSuccess, errorCat
-  } = useSelector(categorieArticleProperties)
-
-  // cas articles
-  const selectLayoutStateArt = (state) => state.Articles;
-  const articleProperties = createSelector(
-    selectLayoutStateArt,
-    (ecom) => ({
-      articles: ecom.articles,
-      isArticlesSuccess: ecom.isArticlesSuccess,
-      errorArt: ecom.error,
-    })
-  );
-  // Inside your component
-  const {
-    articles, isArticlesSuccess, errorArt
-  } = useSelector(articleProperties)
+    tiers, isTiersSuccess, errorTiers
+  } = useSelector(tiersProperties)
 
   const [isEdit, setIsEdit] = useState(false);
-  const [article, setArticle] = useState([]);
+  const [tier, setTier] = useState([]);
  
-  useEffect(() => {
-  if (!isCategoriesSuccess && !categoriesArticles.length) {
-    dispatch(onGetCategoriesArticles());
-  }
-}, [isCategoriesSuccess, categoriesArticles, dispatch]);
-
  useEffect(() => {
-  if (!isArticlesSuccess && !articles.length) {
-    dispatch(onGetArticles());
+  if (!isTiersSuccess && !tiers.length) {
+    dispatch(onGetTiers());
   }
-}, [isArticlesSuccess, articles, dispatch]);
+}, [isTiersSuccess, tiers, dispatch]);
 
 
   useEffect(() => {
-    setArticle(articles);
-  }, [articles]);
+    setTier(tiers);
+  }, [tiers]);
 
   useEffect(() => {
-    if (!isEmpty(articles)) {
-      setArticle(articles);
+    if (!isEmpty(tiers)) {
+      setTier(tiers);
       setIsEdit(false);
     }
-  }, [articles]);
-
-useEffect(() => {
-  if (!isCategoriesSuccess && !categoriesArticles.length) {
-    dispatch(onGetCategoriesArticles());
-  }
-}, [isCategoriesSuccess, categoriesArticles, dispatch]);
-
-
-
-const categorieOptions = categoriesArticles.map((cat) => ({
-  value: cat.id,
-  label: cat.libelle,
-}));
-
-
-
-const formatPrix = (val, forPDF = false) => {
-  const str = new Intl.NumberFormat('fr-FR', {
-    minimumFractionDigits: 3,
-    maximumFractionDigits: 3,
-  }).format(val);
-
-  return forPDF ? str.replace(/\u202F/g, " ") : str;
-};
-
-  const getCategorieLibellePDF = (id) => {
-  const found = categoriesArticles.find((cat) => cat.id === id);
-  return found ? found.libelle : 'Inconnu';
-};
+  }, [tiers]);
 
 
   // Delete customer
@@ -155,7 +105,7 @@ const formatPrix = (val, forPDF = false) => {
   const toggle = useCallback(() => {
     if (modal) {
       setModal(false);
-      setArticle(null);
+      setTier(null);
 
     } else {
       setModal(true);
@@ -166,7 +116,7 @@ const formatPrix = (val, forPDF = false) => {
 
   // Delete Data Article
   const onClickDeleteArt = (article) => {
-    setArticle(article);
+    setTier(article);
     setDeleteModal(true);
   };
   // validation
@@ -175,14 +125,14 @@ const formatPrix = (val, forPDF = false) => {
     enableReinitialize: true,
 
     initialValues: {
-      designation: (article && article.designation) || '',
+     /* designation: (article && article.designation) || '',
       unite: (article && article.unite) || '',
       prix_U_A_HT: (article && article.prix_U_A_HT) || 0,
       prix_U_V_HT: (article && article.prix_U_V_HT) || 0,
       taux_TVA: (article && article.taux_TVA) || 0,
       fodec: (article && article.fodec) || 0,
       stockable: (article && article.stockable) || false,
-      categorie: (article && article.id_CategorieArticle) || '',
+      categorie: (article && article.id_CategorieArticle) || '',*/
      
     },
     validationSchema: Yup.object({
@@ -331,13 +281,10 @@ const formatPrix = (val, forPDF = false) => {
     setSelectedCheckBoxDelete(ele);
   };
 
- //  articles Column
+ //  tiers Column
  const columns1 = useMemo(
   () => {
-    const getCategorieLibelle = (id) => {
-  const found = categoriesArticles.find((cat) => cat.id === id);
-  return found ? found.libelle : 'Inconnu';
-};
+  
 return [
     {
       header: <input type="checkbox" id="checkBoxAll" className="form-check-input" onClick={() => checkedAll()} />,
@@ -351,58 +298,58 @@ return [
       meta: { className: "no-print" }
     },
     {
-      header: "Désignation",
-      accessorKey: "designation",
+      header: "Code Tiers",
+      accessorKey: "idTiers",
       enableColumnFilter: false,
       meta: { className: "print-visible" }
     },
     {
-      header: "Unité",
-      accessorKey: "unite",
-      enableColumnFilter: false,
-      meta: { className: "print-visible" }
-    },
-     {
-      header: "Prix Uni Achat HT (DT)",
-      accessorKey: "prix_U_A_HT",
-      cell: ({ getValue }) => formatPrix(getValue()),
+      header: "Type",
+      accessorKey: "type",
       enableColumnFilter: false,
       meta: { className: "print-visible" }
     },
     {
-      header: "Prix Uni Vente HT (DT)",
-      accessorKey: "prix_U_V_HT",
-      cell: ({ getValue }) => formatPrix(getValue()),
+      header: "Raison Sociale / Nom et Prénom",
+      accessorFn: (row) => {
+    if (row.raisonSociale) {
+      return row.raisonSociale;
+    } else {
+      // Si nom et prénom sont tous les deux vides, afficher une valeur vide
+      const nomPrenom = [row.nom, row.prenom].filter(Boolean).join(" ");
+      return nomPrenom || "-";
+    }
+  },
       enableColumnFilter: false,
       meta: { className: "print-visible" }
     },
     {
-      header: "Taux TVA (%)",
-      accessorKey: "taux_TVA",
+      header: "Matricule Fiscale / CIN",
+      accessorFn: (row) => {
+    if (row.matriculeFiscale) {
+      return row.matriculeFiscale;
+    } else {
+      return row.cin || "-";
+    }
+  },
       enableColumnFilter: false,
       meta: { className: "print-visible" }
     },
     {
-      header: "Fodec (%)",
-      accessorKey: "fodec",
+      header: "Adresse",
+      accessorKey: "adresse",
       enableColumnFilter: false,
       meta: { className: "print-visible" }
     },
     {
-      header: "Stock",
-      accessorKey: "stockable",
-      cell: ({ getValue }) => (
-    <span className={`badge rounded-pill border ${getValue() ? 'border-success text-success' : 'border-danger text-danger'}`}>
-      {getValue() ? 'Stockable' : 'Non stockable'}
-    </span>
-  ),
+      header: "Email",
+      accessorKey: "email",
       enableColumnFilter: false,
       meta: { className: "print-visible" }
     },
     {
-      header: "Catégorie",
-      accessorKey: "id_CategorieArticle",
-      cell: ({ getValue }) => getCategorieLibelle(getValue()),
+      header: "RIB",
+      accessorKey: "rib",
       enableColumnFilter: false,
       meta: { className: "print-visible" }
     },
@@ -436,7 +383,7 @@ return [
       meta: { className: "no-print" }
     },
   ];
-  },[checkedAll,categoriesArticles]);
+  },[checkedAll]);
 
 
   const dateFormat = () => {
@@ -457,33 +404,32 @@ return [
   const [isExportCSV, setIsExportCSV] = useState(false);
   const [isExportPDF, setIsExportPDF] = useState(false);
 
-  document.title = "Articles | Application Gestion Commerciale";
+  document.title = "Tiers | Application Gestion Commerciale";
   return (
     <React.Fragment>
       <div className="page-content">
         <ExportPDFModal
           show={isExportPDF}
           onCloseClick={() => setIsExportPDF(false)}
-          data={articles}
+          data={tiers}
           columns={[
             //{ field: "id", label: "ID" },
-            { field: "designation", label: "Désignation" },
-            { field: "unite", label: "Unité" },
-            { field: "prix_U_A_HT", label: "Prix Uni Achat HT (DT)", format: (val) => formatPrix(val, true)},
-            { field: "prix_U_V_HT", label: "Prix Uni Vente HT (DT)", format: (val) => formatPrix(val, true) },
-            { field: "taux_TVA", label: "Taux TVA (%)" },
-            { field: "fodec", label: "Fodec (%)" },
-            { field: "stockable", label: "Stock", format: (val) => (val ? "Stockable" : "Non stockable") },
-            { field: "id_CategorieArticle", label: "Catégorie", format: (val) => getCategorieLibellePDF(val) },
+            { field: "idTiers", label: "Code Tiers" },
+            { field: "type", label: "Type" },
+            { field: "raisonSociale", label: "Raison Sociale / Nom et Prénom", format: (_, row) => row.raisonSociale || [row.nom, row.prenom].filter(Boolean).join(" ") || "-"},
+            { field: "matriculeFiscale", label: "Matricule Fiscale / CIN", format: (_, row) => row.matriculeFiscale || row.cin || "-" },
+            { field: "adresse", label: "Adresse" },
+            { field: "email", label: "Email" },
+            { field: "rib", label: "RIB" },
           ]}
-          title="Liste des articles"
-          filename="Articles"
+          title="Liste des tiers"
+          filename="Tiers"
         />
 
         <ExportCSVModal
           show={isExportCSV}
           onCloseClick={() => setIsExportCSV(false)}
-          data={articles}
+          data={tiers}
         />
         <DeleteModal
           show={deleteModal}
@@ -499,15 +445,15 @@ return [
           onCloseClick={() => setDeleteModalMulti(false)}
         />
         <Container fluid>
-          <BreadCrumb title="Articles" pageTitle="Base" />
+          <BreadCrumb title="Tiers" pageTitle="Base" />
           <Row>
             <Col lg={12}>
-              <Card id="articlesList">
+              <Card id="tiersList">
                 <CardHeader className="border-0">
                   <Row className="g-4 align-items-center">
                     <div className="col-sm">
                       <div>
-                        <h5 className="card-title mb-0 print-visible-title">Liste des articles</h5>
+                        <h5 className="card-title mb-0 print-visible-title">Liste des tiers</h5>
                       </div>
                     </div>
                     <div className="col-sm-auto no-print">
@@ -546,16 +492,16 @@ return [
                 </CardHeader>
                 <div className="card-body pt-0">
                   <div>
-                    {!isArticlesSuccess ? (
-                      <Loader error={errorArt} />
-                    ) : articles.length === 0 ? (
+                    {!isTiersSuccess ? (
+                      <Loader error={errorTiers} />
+                    ) : tiers.length === 0 ? (
                       <Alert color="secondary" className="text-center">
-                        <strong>Aucun article trouvée. Veuillez ajouter un.</strong>
+                        <strong>Aucun tier trouvé. Veuillez ajouter un.</strong>
                       </Alert>
                     ) : (
                        <TableContainer
                         columns={columns1}
-                        data={(articles || [])}
+                        data={(tiers || [])}
                         isGlobalFilter={true}
                         isAddUserList={false}
                         customPageSize={10}
@@ -570,7 +516,7 @@ return [
                   </div>
                   <Modal id="showModal" isOpen={modal} toggle={toggle} centered>
                     <ModalHeader className="bg-light p-3" toggle={toggle}>
-                      {!!isEdit ? "Modifier un article" : "Ajouter un article"}
+                      {!!isEdit ? "Modifier un tier" : "Ajouter un tier"}
                     </ModalHeader>
                     <Form className="tablelist-form" onSubmit={validation.handleSubmit}>
                        
@@ -782,44 +728,14 @@ return [
                           </FormFeedback>
                         ) : null}
                       </div>
-                      <div className="mb-3">
-                      <Label htmlFor="categorie-field" className="form-label">
-                        Catégorie *
-                      </Label>
-                      <Select
-                        inputId="categorie-field"
-                        name="categorie"
-                        options={categorieOptions}
-                        onChange={(selectedOption) =>
-                          validation.setFieldValue("categorie", selectedOption ? selectedOption.value : "")
-                        }
-                        onBlur={() => validation.setFieldTouched("categorie", true)}
-                        value={
-                          categorieOptions.find(
-                            (option) => option.value === validation.values.categorie
-                          ) || null
-                        }
-                        classNamePrefix="react-select"
-                        className={
-                          validation.touched.categorie && validation.errors.categorie
-                            ? "is-invalid"
-                            : ""
-                        }
-                        placeholder="Sélectionner une catégorie..."
-                      />
-                      {validation.touched.categorie && validation.errors.categorie ? (
-                        <div className="invalid-feedback d-block">
-                          {validation.errors.categorie}
-                        </div>
-                      ) : null}
-                    </div>
+                    
                       </div>
                         </div>
                          
                       </ModalBody>
                       <ModalFooter>
                         <div className="hstack gap-2 justify-content-end">
-                          <button type="button" className="btn btn-light" onClick={() => { setModal(false); setArticle(null); }}> Fermer </button>
+                          <button type="button" className="btn btn-light" onClick={() => { setModal(false); setTier(null); }}> Fermer </button>
 
                           <button type="submit" className="btn btn-success"> {!!isEdit ? "Modifier" : "Ajouter"} </button>
                         </div>
@@ -837,4 +753,4 @@ return [
   );
 };
 
-export default Articles;
+export default Tiers;

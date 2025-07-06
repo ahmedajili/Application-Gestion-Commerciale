@@ -176,7 +176,7 @@ const Navdata = () => {
         {
           id: "tiers",
           label: "Tiers",
-          link: "/apps-ecommerce-customers",
+          link: "/apps-tiers",
           parentId: "base",
         },
         
